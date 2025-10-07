@@ -17,12 +17,12 @@
 
   <style>
     :root{
-      --bg: #0B0D10;
-      /* Safe-area fallbacks work in browser too (0px there) */
+      /* Safe-area with fallbacks */
       --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
+      --bg: #0B0D10;
     }
 
     html, body {
@@ -34,7 +34,7 @@
       color-scheme: dark;
     }
 
-    /* Fill the visual viewport; no scrolling/bounce */
+    /* Fill the visual viewport; avoid scroll/bounce */
     body {
       position: fixed;
       inset: 0;
@@ -42,30 +42,43 @@
       background: var(--bg);
     }
 
-    /* Wrapper handles safe-area with padding */
+    /* Wrapper: safe-area top/left/right; bottom will be toggled */
     .app {
       position: fixed;
       inset: 0;
-      padding: var(--sat) var(--sar) var(--sab) var(--sal);
+      /* use dynamic viewport where available */
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+
+      padding-top: var(--sat);
+      padding-right: var(--sar);
+      padding-left: var(--sal);
+      /* default in browser: keep bottom padding so nothing hides behind toolbars */
+      padding-bottom: var(--sab);
+
       box-sizing: border-box;
-      background: var(--bg);
-      width: 100%;
-      height: 100%;
+      background: transparent;
     }
 
-    /* Iframe just fills the padded area */
+    /* Standalone PWA: remove bottom padding for edge-to-edge */
+    .edge .app {
+      padding-bottom: 0; /* content can render under home indicator */
+    }
+
+    /* Iframe fills the wrapper */
     .app > iframe {
       width: 100%;
       height: 100%;
       border: 0;
       display: block;
-      background: var(--bg);
+      background: transparent; /* don’t add extra dark behind light figma bg */
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- If the figma.site URL resists embedding, switch to the Prototype EMBED url -->
+    <!-- If figma.site doesn’t embed, switch to the Prototype EMBED url -->
     <iframe
       src="https://stony-free-16072418.figma.site"
       allow="fullscreen; autoplay"
@@ -75,6 +88,16 @@
   </div>
 
   <script>
+    // Detect installed (standalone) mode and enable edge-to-edge
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true; // iOS
+
+    if (isStandalone) {
+      document.body.classList.add('edge');
+    }
+
+    // Register service worker
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
