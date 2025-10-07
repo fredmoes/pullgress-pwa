@@ -17,25 +17,22 @@
 
   <style>
     :root{
-      /* safe-areas (0 in normal browser) */
+      /* Match this to your Figma page background (light). */
+      --bg: #F3F6FB; /* ← adjust if your canvas hex differs */
       --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
-      --bg: #0B0D10; /* body/edge background if anything shows */
     }
 
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      width: 100%;
+      margin: 0; padding: 0; height: 100%; width: 100%;
       background: var(--bg);
-      color-scheme: dark;
+      color-scheme: light;
       overscroll-behavior: none;
     }
 
-    /* Base: fill viewport and prevent bounce */
+    /* Fill visual viewport; prevent scroll/bounce */
     body {
       position: fixed;
       inset: 0;
@@ -43,27 +40,23 @@
       background: var(--bg);
     }
 
-    /* Wrapper fills viewport */
+    /* Wrapper: safe-area padding in browser, full viewport height */
     .app {
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;   /* fallback */
-      height: 100svh;  /* small viewport on iOS 16+ */
-      height: 100dvh;  /* dynamic viewport on modern browsers */
+      height: 100svh;  /* iOS 16+ small viewport */
+      height: 100dvh;  /* dynamic viewport (modern browsers) */
+      padding: var(--sat) var(--sar) var(--sab) var(--sal);
       box-sizing: border-box;
-
-      /* Browser/tab mode: keep safe-area so toolbars don’t overlap */
-      padding-top: var(--sat);
-      padding-right: var(--sar);
-      padding-bottom: var(--sab);
-      padding-left: var(--sal);
       background: transparent;
     }
 
-    /* Standalone PWA: edge-to-edge (no padding top/bottom/left/right) */
+    /* Standalone (installed PWA): go edge-to-edge and render under home indicator */
     .edge .app {
-      padding: 0;
+      padding: var(--sat) var(--sar) 0 var(--sal);           /* remove bottom padding */
+      height: calc(100dvh + var(--sab));                    /* extend under home pill */
     }
 
     /* Iframe fills wrapper */
@@ -72,13 +65,22 @@
       height: 100%;
       border: 0;
       display: block;
-      background: transparent; /* don’t show a dark fill behind light Figma bg */
+      background: transparent; /* don't add dark fill behind light Figma bg */
+    }
+
+    /* Paint exactly the bottom safe-area so no dark strip is visible */
+    .edge .underlay {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: var(--sab);
+      background: var(--bg);
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- If figma.site blocks iframe, swap to the Prototype EMBED url -->
+    <!-- If figma.site resists embedding, swap to your Prototype EMBED URL -->
     <iframe
       src="https://stony-free-16072418.figma.site"
       allow="fullscreen; autoplay"
@@ -86,17 +88,19 @@
       loading="eager">
     </iframe>
   </div>
+  <div class="underlay"></div>
 
   <script>
-    // Detect installed mode and enable edge-to-edge (no safe-area padding)
+    // Detect installed mode (iOS & others) and enable edge-to-edge
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true; // iOS Safari
+      window.navigator.standalone === true;
 
     if (isStandalone) {
       document.body.classList.add('edge');
     }
 
+    // Register SW (optional but recommended)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
