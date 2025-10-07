@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+
+  <!-- Viewport & Safe Area Settings -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
   <title>Pullgress</title>
 
-  <!-- Progressive Web App setup -->
+  <!-- PWA Manifest -->
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#0B0D10" />
 
-  <!-- iOS fullscreen support -->
+  <!-- iOS Fullscreen Settings -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Pullgress" />
@@ -22,32 +24,36 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      background-color: #0B0D10; /* dark app background */
+      background-color: #0B0D10;
       color-scheme: dark;
     }
 
-    /* Ensure iframe fills safe area on iOS/Android */
-    iframe {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: calc(100vh + env(safe-area-inset-bottom));
-      border: 0;
-      background-color: #0B0D10;
-    }
-
-    /* Optional: if you want a loading fallback color */
-    body::before {
-      content: "";
+    /* ✅ Final fullscreen fix */
+    body {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: #0B0D10;
+      padding-bottom: env(safe-area-inset-bottom);
+      overflow: hidden;
+    }
+
+    iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% + env(safe-area-inset-bottom));
+      border: none;
       background-color: #0B0D10;
     }
 
-    /* Padding to respect safe area */
-    body {
-      padding-bottom: env(safe-area-inset-bottom);
+    /* Optional: fallback background before iframe loads */
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
       background-color: #0B0D10;
     }
   </style>
@@ -62,7 +68,7 @@
   ></iframe>
 
   <script>
-    // Register service worker for PWA
+    // Register service worker for offline/PWA behavior
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(err => {
         console.warn('Service worker registration failed:', err);
