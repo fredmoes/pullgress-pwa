@@ -17,12 +17,12 @@
 
   <style>
     :root{
-      /* Safe-area with fallbacks so desktop/browsers don’t break */
+      --bg: #0B0D10;
+      /* Safe-area fallbacks work in browser too (0px there) */
       --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
-      --bg: #0B0D10;
     }
 
     html, body {
@@ -34,7 +34,7 @@
       color-scheme: dark;
     }
 
-    /* Default (browser/tab) — fill the visible viewport */
+    /* Fill the visual viewport; no scrolling/bounce */
     body {
       position: fixed;
       inset: 0;
@@ -42,47 +42,39 @@
       background: var(--bg);
     }
 
-    iframe {
+    /* Wrapper handles safe-area with padding */
+    .app {
       position: fixed;
-      inset: 0;                 /* fill whole viewport in browser mode */
+      inset: 0;
+      padding: var(--sat) var(--sar) var(--sab) var(--sal);
+      box-sizing: border-box;
+      background: var(--bg);
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Iframe just fills the padded area */
+    .app > iframe {
       width: 100%;
       height: 100%;
       border: 0;
-      background: var(--bg);
       display: block;
-    }
-
-    /* Standalone/PWA mode — respect safe areas */
-    .standalone iframe {
-      top: var(--sat);
-      right: var(--sar);
-      bottom: var(--sab);
-      left: var(--sal);
-      width: auto;
-      height: auto;
+      background: var(--bg);
     }
   </style>
 </head>
 <body>
-  <!-- Tip: if the figma.site URL refuses to embed, use your prototype EMBED link instead -->
-  <iframe
-    src="https://stony-free-16072418.figma.site"
-    allow="fullscreen; autoplay"
-    referrerpolicy="no-referrer"
-    loading="eager">
-  </iframe>
+  <div class="app">
+    <!-- If the figma.site URL resists embedding, switch to the Prototype EMBED url -->
+    <iframe
+      src="https://stony-free-16072418.figma.site"
+      allow="fullscreen; autoplay"
+      referrerpolicy="no-referrer"
+      loading="eager">
+    </iframe>
+  </div>
 
   <script>
-    // Mark body as 'standalone' when installed so CSS switches to safe-area sizing
-    const isStandalone =
-      window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true; // iOS Safari
-
-    if (isStandalone) {
-      document.body.classList.add('standalone');
-    }
-
-    // Register SW (optional but recommended)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
