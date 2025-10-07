@@ -2,42 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
   <title>Pullgress</title>
 
-  <!-- iOS fullscreen -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="/icons/icon-192.png">
-
-  <!-- PWA manifest -->
+  <!-- Progressive Web App setup -->
   <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0B0D10" />
+
+  <!-- iOS fullscreen support -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Pullgress" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
   <style>
-    html,body{height:100%;margin:0;background:#0B0D10;}
-    body{overflow:hidden;}
-    .wrap{position:fixed;inset:0;}
-    iframe{
-      width:100vw;height:100vh;border:0;display:block;
-      background:#111; /* fallback while loading */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #0B0D10; /* dark app background */
+      color-scheme: dark;
+    }
+
+    /* Ensure iframe fills safe area on iOS/Android */
+    iframe {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: calc(100vh + env(safe-area-inset-bottom));
+      border: 0;
+      background-color: #0B0D10;
+    }
+
+    /* Optional: if you want a loading fallback color */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-color: #0B0D10;
+    }
+
+    /* Padding to respect safe area */
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
+      background-color: #0B0D10;
     }
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <!-- Use your prototype link or figma.site link -->
-    <iframe
-      src="https://stony-free-16072418.figma.site"
-      allow="fullscreen; autoplay"
-      referrerpolicy="no-referrer"
-      loading="eager">
-    </iframe>
-  </div>
+  <iframe
+    src="https://stony-free-16072418.figma.site"
+    allow="fullscreen; autoplay"
+    referrerpolicy="no-referrer"
+    loading="eager"
+  ></iframe>
 
   <script>
-    // Register service worker (optional but good)
+    // Register service worker for PWA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.register('/sw.js').catch(err => {
+        console.warn('Service worker registration failed:', err);
+      });
     }
   </script>
 </body>
