@@ -7,7 +7,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#F3F6FB" />
+  <meta name="theme-color" content="#0B0D10" />
 
   <!-- iOS standalone -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,71 +17,68 @@
 
   <style>
     :root{
-      /* ⚠️ Set this to the exact background color of your Figma canvas */
-      --bg: #F3F6FB;
+      /* safe-areas (0 in normal browser) */
       --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
       --sal: env(safe-area-inset-left, 0px);
+      --bg: #0B0D10; /* body/edge background if anything shows */
     }
 
     html, body {
-      margin: 0; padding: 0; height: 100%; width: 100%;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
       background: var(--bg);
-      color-scheme: light;
+      color-scheme: dark;
       overscroll-behavior: none;
     }
 
+    /* Base: fill viewport and prevent bounce */
     body {
-      position: fixed; inset: 0; overflow: hidden;
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
       background: var(--bg);
     }
 
-    /* Wrapper fills viewport; padding applies safe areas */
+    /* Wrapper fills viewport */
     .app {
-      position: fixed; inset: 0;
+      position: fixed;
+      inset: 0;
       width: 100vw;
       height: 100vh;   /* fallback */
-      height: 100svh;  /* iOS 16+ */
-      height: 100dvh;  /* modern browsers */
-      padding: var(--sat) var(--sar) var(--sab) var(--sal);
+      height: 100svh;  /* small viewport on iOS 16+ */
+      height: 100dvh;  /* dynamic viewport on modern browsers */
       box-sizing: border-box;
+
+      /* Browser/tab mode: keep safe-area so toolbars don’t overlap */
+      padding-top: var(--sat);
+      padding-right: var(--sar);
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
       background: transparent;
     }
 
-    /* Standalone app:
-       - keep TOP padding (covers the notch area correctly)
-       - remove BOTTOM padding so content extends under the home indicator */
+    /* Standalone PWA: edge-to-edge (no padding top/bottom/left/right) */
     .edge .app {
-      padding-top: var(--sat);
-      padding-right: var(--sar);
-      padding-left: var(--sal);
-      padding-bottom: 0;
+      padding: 0;
     }
 
-    /* Iframe fills the padded area */
+    /* Iframe fills wrapper */
     .app > iframe {
       width: 100%;
       height: 100%;
       border: 0;
       display: block;
-      background: transparent;
+      background: transparent; /* don’t show a dark fill behind light Figma bg */
     }
-
-    /* Underlays paint the exact safe-area zones with the same bg color,
-       so no dark strips are ever visible. */
-    .edge .underlay-top,
-    .edge .underlay-bottom {
-      position: fixed; left: 0; right: 0; pointer-events: none;
-      background: var(--bg);
-    }
-    .edge .underlay-top    { top: 0;    height: var(--sat); }
-    .edge .underlay-bottom { bottom: 0; height: var(--sab); }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- If figma.site resists embedding, use the Prototype EMBED URL -->
+    <!-- If figma.site blocks iframe, swap to the Prototype EMBED url -->
     <iframe
       src="https://stony-free-16072418.figma.site"
       allow="fullscreen; autoplay"
@@ -90,15 +87,11 @@
     </iframe>
   </div>
 
-  <!-- Paint exact safe areas so there’s never a visible dark bar -->
-  <div class="underlay-top"></div>
-  <div class="underlay-bottom"></div>
-
   <script>
-    // Detect installed (standalone) mode and toggle edge-to-edge behavior
+    // Detect installed mode and enable edge-to-edge (no safe-area padding)
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
-      window.navigator.standalone === true;
+      window.navigator.standalone === true; // iOS Safari
 
     if (isStandalone) {
       document.body.classList.add('edge');
