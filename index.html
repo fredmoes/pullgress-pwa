@@ -7,7 +7,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="/manifest.webmanifest" />
-  <meta name="theme-color" content="#0B0D10" />
+  <meta name="theme-color" content="#F3F6FB" />
 
   <!-- iOS standalone -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,8 +17,8 @@
 
   <style>
     :root{
-      /* Match this to your Figma page background (light). */
-      --bg: #F3F6FB; /* ← adjust if your canvas hex differs */
+      /* ⚠️ Set this to the exact background color of your Figma canvas */
+      --bg: #F3F6FB;
       --sat: env(safe-area-inset-top, 0px);
       --sar: env(safe-area-inset-right, 0px);
       --sab: env(safe-area-inset-bottom, 0px);
@@ -32,55 +32,56 @@
       overscroll-behavior: none;
     }
 
-    /* Fill visual viewport; prevent scroll/bounce */
     body {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
+      position: fixed; inset: 0; overflow: hidden;
       background: var(--bg);
     }
 
-    /* Wrapper: safe-area padding in browser, full viewport height */
+    /* Wrapper fills viewport; padding applies safe areas */
     .app {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       width: 100vw;
       height: 100vh;   /* fallback */
-      height: 100svh;  /* iOS 16+ small viewport */
-      height: 100dvh;  /* dynamic viewport (modern browsers) */
+      height: 100svh;  /* iOS 16+ */
+      height: 100dvh;  /* modern browsers */
       padding: var(--sat) var(--sar) var(--sab) var(--sal);
       box-sizing: border-box;
       background: transparent;
     }
 
-    /* Standalone (installed PWA): go edge-to-edge and render under home indicator */
+    /* Standalone app:
+       - keep TOP padding (covers the notch area correctly)
+       - remove BOTTOM padding so content extends under the home indicator */
     .edge .app {
-      padding: var(--sat) var(--sar) 0 var(--sal);           /* remove bottom padding */
-      height: calc(100dvh + var(--sab));                    /* extend under home pill */
+      padding-top: var(--sat);
+      padding-right: var(--sar);
+      padding-left: var(--sal);
+      padding-bottom: 0;
     }
 
-    /* Iframe fills wrapper */
+    /* Iframe fills the padded area */
     .app > iframe {
       width: 100%;
       height: 100%;
       border: 0;
       display: block;
-      background: transparent; /* don't add dark fill behind light Figma bg */
+      background: transparent;
     }
 
-    /* Paint exactly the bottom safe-area so no dark strip is visible */
-    .edge .underlay {
-      position: fixed;
-      left: 0; right: 0; bottom: 0;
-      height: var(--sab);
+    /* Underlays paint the exact safe-area zones with the same bg color,
+       so no dark strips are ever visible. */
+    .edge .underlay-top,
+    .edge .underlay-bottom {
+      position: fixed; left: 0; right: 0; pointer-events: none;
       background: var(--bg);
-      pointer-events: none;
     }
+    .edge .underlay-top    { top: 0;    height: var(--sat); }
+    .edge .underlay-bottom { bottom: 0; height: var(--sab); }
   </style>
 </head>
 <body>
   <div class="app">
-    <!-- If figma.site resists embedding, swap to your Prototype EMBED URL -->
+    <!-- If figma.site resists embedding, use the Prototype EMBED URL -->
     <iframe
       src="https://stony-free-16072418.figma.site"
       allow="fullscreen; autoplay"
@@ -88,10 +89,13 @@
       loading="eager">
     </iframe>
   </div>
-  <div class="underlay"></div>
+
+  <!-- Paint exact safe areas so there’s never a visible dark bar -->
+  <div class="underlay-top"></div>
+  <div class="underlay-bottom"></div>
 
   <script>
-    // Detect installed mode (iOS & others) and enable edge-to-edge
+    // Detect installed (standalone) mode and toggle edge-to-edge behavior
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       window.navigator.standalone === true;
@@ -100,7 +104,6 @@
       document.body.classList.add('edge');
     }
 
-    // Register SW (optional but recommended)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(()=>{});
     }
