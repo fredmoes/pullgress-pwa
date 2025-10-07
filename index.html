@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Pullgress</title>
+
+  <!-- iOS fullscreen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+
+  <!-- PWA manifest -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <style>
+    html,body{height:100%;margin:0;background:#0B0D10;}
+    body{overflow:hidden;}
+    .wrap{position:fixed;inset:0;}
+    iframe{
+      width:100vw;height:100vh;border:0;display:block;
+      background:#111; /* fallback while loading */
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Use your prototype link or figma.site link -->
+    <iframe
+      src="https://stony-free-16072418.figma.site"
+      allow="fullscreen; autoplay"
+      referrerpolicy="no-referrer"
+      loading="eager">
+    </iframe>
+  </div>
+
+  <script>
+    // Register service worker (optional but good)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
